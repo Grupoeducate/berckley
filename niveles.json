@@ -1,0 +1,45 @@
+{
+  "colores_areas": {
+    "Lenguaje": "#FBBB21",
+    "matematicas": "#95C11F",
+    "ciencias_naturales": "#95C11F",
+    "sociales_ciudadanas": "#3974B9",
+    "ingles": "#8257A0"
+  },
+  "puntaje_global": [
+    { "nivel": "Bajo", "min": 0, "max": 2.99, "color": "#d9534f" },
+    { "nivel": "Mínimo", "min": 3.00, "max": 3.59, "color": "#f0ad4e" },
+    { "nivel": "Alto", "min": 3.6, "max": 4.5, "color": "#5bc0de" },
+    { "nivel": "Superior", "min": 4.5, "max": 5, "color": "#5cb85c" }
+  ],
+  "Lenguaje": [
+     { "nivel": "Bajo", "min": 0, "max": 2.99, "color": "#d9534f" },
+    { "nivel": "Mínimo", "min": 3.00, "max": 3.59, "color": "#f0ad4e" },
+    { "nivel": "Alto", "min": 3.6, "max": 4.5, "color": "#5bc0de" },
+    { "nivel": "Superior", "min": 4.5, "max": 5, "color": "#5cb85c" }
+  ],
+  "matematicas": [
+     { "nivel": "Bajo", "min": 0, "max": 2.99, "color": "#d9534f" },
+    { "nivel": "Mínimo", "min": 3.00, "max": 3.59, "color": "#f0ad4e" },
+    { "nivel": "Alto", "min": 3.6, "max": 4.5, "color": "#5bc0de" },
+    { "nivel": "Superior", "min": 4.5, "max": 5, "color": "#5cb85c" }
+  ],
+  "sociales_ciudadanas": [
+    { "nivel": "Bajo", "min": 0, "max": 2.99, "color": "#d9534f" },
+    { "nivel": "Mínimo", "min": 3.00, "max": 3.59, "color": "#f0ad4e" },
+    { "nivel": "Alto", "min": 3.6, "max": 4.5, "color": "#5bc0de" },
+    { "nivel": "Superior", "min": 4.5, "max": 5, "color": "#5cb85c" }
+  ],
+  "ciencias_naturales": [
+      { "nivel": "Bajo", "min": 0, "max": 2.99, "color": "#d9534f" },
+    { "nivel": "Mínimo", "min": 3.00, "max": 3.59, "color": "#f0ad4e" },
+    { "nivel": "Alto", "min": 3.6, "max": 4.5, "color": "#5bc0de" },
+    { "nivel": "Superior", "min": 4.5, "max": 5, "color": "#5cb85c" }
+  ],
+  "ingles": [
+   { "nivel": "Bajo", "min": 0, "max": 2.99, "color": "#d9534f" },
+    { "nivel": "Mínimo", "min": 3.00, "max": 3.59, "color": "#f0ad4e" },
+    { "nivel": "Alto", "min": 3.6, "max": 4.5, "color": "#5bc0de" },
+    { "nivel": "Superior", "min": 4.5, "max": 5, "color": "#5cb85c" }
+  ]
+}
