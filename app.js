@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let datosCompletos = []; // Almacenará todos los registros de notas
     let configNiveles = {};  // Almacenará la configuración de niveles y colores del JSON
 
-    // Constantes para los nombres de las áreas (deben coincidir con el CSV)
+    // Constantes para los nombres de las áreas (deben coincidir EXACTAMENTE con el CSV)
     const NOMBRES_AREAS_CSV = [
         'LECTURA CRÍTICA',
         'MATEMÁTICAS',
@@ -24,11 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FUNCIONES AUXILIARES ---
 
-    /**
-     * Devuelve el ciclo académico correspondiente a un grado.
-     * @param {number} grado - El número del grado (ej: 5).
-     * @returns {string} El ciclo correspondiente (ej: "Ciclo-II").
-     */
     function obtenerCiclo(grado) {
         if (grado >= 1 && grado <= 3) return 'Ciclo-I';
         if (grado >= 4 && grado <= 5) return 'Ciclo-II';
@@ -38,20 +33,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return 'N/A';
     }
 
-    /**
-     * Busca en la configuración JSON el nivel y color para una nota específica en un área.
-     * @param {string} area - El nombre del área (del CSV, ej: 'MATEMÁTICAS').
-     * @param {number} nota - La nota a evaluar.
-     * @returns {object} Un objeto con el nivel y el color.
-     */
+    // ¡FUNCIÓN CORREGIDA Y MEJORADA!
     function getNivelInfo(area, nota) {
+        // Usa 'puntaje_global' si el área no está en el mapeo (ej. para promedios de grado)
         const nombreJson = MAPEO_AREAS_JSON[area] || 'puntaje_global';
         const niveles = configNiveles[nombreJson];
+        const notaNum = parseFloat(nota);
 
-        if (!niveles) return { nivel: "N/A", color: '#cccccc' }; // Color gris por defecto
+        if (!niveles || isNaN(notaNum)) {
+            return { nivel: "N/A", color: '#cccccc' }; // Color gris por defecto si algo falla
+        }
 
         for (const nivel of niveles) {
-            if (nota >= nivel.min && nota <= nivel.max) {
+            if (notaNum >= nivel.min && notaNum <= nivel.max) {
                 return nivel; // Devuelve el objeto completo {nivel, min, max, color}
             }
         }
@@ -61,16 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LÓGICA PRINCIPAL DE CARGA Y PROCESAMIENTO ---
 
-    /**
-     * Carga el JSON de configuración y los archivos CSV, los procesa y prepara la aplicación.
-     */
     async function cargarDatos() {
         try {
             // 1. Cargar el JSON de configuración
             const responseNiveles = await fetch('niveles.json');
             if (!responseNiveles.ok) throw new Error('No se pudo cargar niveles.json');
             configNiveles = await responseNiveles.json();
-            console.log("Configuración de niveles cargada exitosamente.");
+            console.log("Configuración de niveles cargada.");
 
             // 2. Cargar los archivos CSV
             const archivos = ['Consolidado_2023-2024.csv', 'Consolidado_2024-2025.csv'];
@@ -81,7 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const response = await fetch(archivo);
                     if (response.ok) {
                         const csvText = await response.text();
-                        const csvSinComas = csvText.replace(/,/g, '.'); // Reemplaza comas decimales
+                        // ¡CORRECCIÓN CLAVE! Reemplazar comas decimales ANTES de procesar
+                        const csvSinComas = csvText.replace(/,/g, '.');
                         const data = Papa.parse(csvSinComas, {
                             header: true,
                             delimiter: ";",
@@ -89,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             skipEmptyLines: true
                         }).data;
                         
-                        // Transformar datos de formato "ancho" a "largo"
+                        // Transformar datos a formato "largo"
                         data.forEach(fila => {
                             if (fila.grado) {
                                 NOMBRES_AREAS_CSV.forEach(area => {
@@ -119,13 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
             poblarFiltros();
         } catch (error) {
             console.error("Error crítico al cargar los datos iniciales:", error);
-            alert("No se pudo cargar la configuración inicial. Por favor, revise la consola para más detalles.");
+            alert("No se pudo cargar la configuración inicial. Por favor, revise la consola.");
         }
     }
 
-    /**
-     * Rellena los menús desplegables (selects) con valores únicos del conjunto de datos.
-     */
     function poblarFiltros() {
         if (datosCompletos.length === 0) return;
 
@@ -146,21 +135,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MANEJO DE EVENTOS Y GENERACIÓN DE VISUALIZACIONES ---
 
+    // ¡FLUJO DE CONSULTA CORREGIDO!
     consultarBtn.addEventListener('click', () => {
-        // Limpiar resultados anteriores
         document.getElementById('graficos-container').innerHTML = '';
         document.getElementById('tabla-estudiantes-body').innerHTML = '';
 
-        // Obtener valores de los filtros
         const calendario = document.getElementById('calendario').value;
         const prueba = document.getElementById('prueba').value;
         const ciclo = document.getElementById('ciclo').value;
         const grado = document.getElementById('grado').value;
         const area = document.getElementById('area').value;
 
-        // Filtrar el conjunto de datos principal
         const datosFiltrados = datosCompletos.filter(item => 
-            (!calendario || item.calendario === calendario) &&
+            (item.calendario === calendario) &&
             (prueba === 'todos' || item.prueba === prueba) &&
             (ciclo === 'todos' || item.ciclo === ciclo) &&
             (grado === 'todos' || item.grado.toString() === grado) &&
@@ -172,22 +159,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Generar las visualizaciones con los datos filtrados
+        // ¡CORRECCIÓN CLAVE! Se llama a todas las funciones de visualización
         generarGraficoPromedioPor('Promedio General por Área', datosFiltrados, 'area');
         if (grado === 'todos') {
             generarGraficoPromedioPor('Promedio General por Grado', datosFiltrados, 'grado');
         } else {
             generarGraficoPromedioPor(`Promedio por Grupo - Grado ${grado}`, datosFiltrados, 'grupo');
         }
+        // Llamada a la función para mostrar la tabla
         mostrarTablaEstudiantes(datosFiltrados);
     });
-
-    /**
-     * Calcula promedios y prepara los datos para un gráfico de barras.
-     * @param {string} titulo - Título del gráfico.
-     * @param {Array} datos - El conjunto de datos filtrado.
-     * @param {string} agruparPor - La propiedad por la cual agrupar (ej: 'area', 'grado').
-     */
+    
+    // ¡FUNCIÓN DE GRÁFICOS CORREGIDA!
     function generarGraficoPromedioPor(titulo, datos, agruparPor) {
         const grupos = {};
         datos.forEach(dato => {
@@ -203,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const labels = Object.keys(grupos).sort();
         const promedios = labels.map(clave => (grupos[clave].contador > 0 ? (grupos[clave].suma / grupos[clave].contador) : 0));
         
+        // ¡CORRECCIÓN CLAVE! Se asegura de llamar a getNivelInfo correctamente
         const coloresBarras = promedios.map((prom, index) => {
             const areaParaColor = (agruparPor === 'area') ? labels[index] : 'puntaje_global';
             return getNivelInfo(areaParaColor, prom).color;
@@ -213,13 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Renderiza un gráfico de Chart.js en la página.
-     * @param {string} titulo - Título del gráfico.
-     * @param {Array} labels - Etiquetas para el eje X.
-     * @param {Array} data - Valores numéricos para las barras.
-     * @param {Array} colores - Colores para cada una de las barras.
-     */
     function generarElementoGrafico(titulo, labels, data, colores) {
         const container = document.getElementById('graficos-container');
         const canvasContainer = document.createElement('div');
@@ -238,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     label: 'Promedio de Notas',
                     data: data.map(d => d.toFixed(2)),
+                    // ¡CORRECCIÓN CLAVE! Se asigna el array de colores dinámicos
                     backgroundColor: colores,
                     borderColor: '#ffffff',
                     borderWidth: 1,
@@ -251,32 +229,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    /**
-     * Construye y muestra la tabla HTML con el detalle de los estudiantes.
-     * @param {Array} datos - El conjunto de datos filtrado.
-     */
+    // ¡FUNCIÓN DE TABLA CORREGIDA!
     function mostrarTablaEstudiantes(datos) {
         const tbody = document.getElementById('tabla-estudiantes-body');
         const estudiantes = {};
         
-        // Re-agrupar los datos por estudiante para tener una sola fila por cada uno
+        // Agrupar los datos por estudiante para tener una sola fila por cada uno
         datos.forEach(dato => {
-            if (!estudiantes[dato.estudiante]) {
-                estudiantes[dato.estudiante] = { grupo: dato.grupo };
+            const nombreEstudiante = dato.estudiante.trim(); // Limpiar espacios en blanco
+            if (!estudiantes[nombreEstudiante]) {
+                estudiantes[nombreEstudiante] = { grupo: dato.grupo };
             }
-            estudiantes[dato.estudiante][dato.area] = dato.nota;
+            estudiantes[nombreEstudiante][dato.area] = dato.nota;
         });
 
+        // Crear una fila por cada estudiante
         for (const nombreEstudiante in estudiantes) {
             const datosEstudiante = estudiantes[nombreEstudiante];
             const tr = document.createElement('tr');
             
-            // Celda para nombre y grupo
             tr.innerHTML = `<td>${nombreEstudiante}</td><td>${datosEstudiante.grupo || 'N/A'}</td>`;
             
             // Crear celdas de notas con su color de fondo
             NOMBRES_AREAS_CSV.forEach(area => {
                 const nota = datosEstudiante[area] || 0;
+                // ¡CORRECCIÓN CLAVE! Se llama a la función de nivel para obtener el color
                 const nivel = getNivelInfo(area, nota);
                 const td = document.createElement('td');
                 td.className = 'celda-nota';
