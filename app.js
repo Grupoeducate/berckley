@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar y procesar los datos de todos los archivos CSV
     async function cargarDatos() {
         const archivos = [
-            'Consolidado_2023-2024.csv',
+            'Consolidado_2023-2024.csv'
             //'Consolidado_2024-2025.csv' // Cuando exista este archivo, lo cargará
         ];
         let datosTransformados = [];
@@ -200,4 +200,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Iniciar la carga de datos al abrir la página
     cargarDatos();
+
 });
