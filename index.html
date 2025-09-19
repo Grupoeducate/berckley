@@ -4,15 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Análisis de Desempeño - Berckley International School</title>
+    <!-- Enlace a nuestra hoja de estilos CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- Encabezado de la página con logo y títulos -->
     <header>
+        <img src="logogec.png" alt="Logo Grupo Edúcate" id="logo">
         <h1>Panel de Desempeño Académico</h1>
         <h2>Berckley International School</h2>
     </header>
 
+    <!-- Contenido principal de la aplicación -->
     <main>
+
+        <!-- Sección 1: Panel de consulta con todos los filtros -->
         <section id="panel-consulta">
             <form id="filtro-form">
                 <label for="calendario">Calendario:</label>
@@ -24,7 +31,7 @@
                 <label for="prueba">Prueba:</label>
                 <select id="prueba" name="prueba">
                     <option value="todos">Todas</option>
-                    <!-- Opciones se llenarán con JS -->
+                    <!-- Las opciones se llenarán dinámicamente con JavaScript -->
                 </select>
 
                 <label for="ciclo">Ciclo:</label>
@@ -40,32 +47,62 @@
                 <label for="grado">Grado:</label>
                 <select id="grado" name="grado">
                     <option value="todos">Todos</option>
-                    <!-- Opciones se llenarán con JS -->
+                    <!-- Las opciones se llenarán dinámicamente con JavaScript -->
                 </select>
 
                 <label for="area">Área:</label>
                 <select id="area" name="area">
                     <option value="todas">Todas</option>
-                    <!-- Opciones se llenarán con JS -->
+                    <!-- Las opciones se llenarán dinámicamente con JavaScript -->
                 </select>
 
                 <button type="button" id="consultar-btn">Consultar</button>
             </form>
         </section>
 
+        <!-- Sección 2: Contenedor para los gráficos de barras -->
         <section id="resultados-visuales">
             <div id="graficos-container">
-                <!-- Los gráficos se insertarán aquí dinámicamente -->
+                <!-- Los gráficos se insertarán aquí dinámicamente desde JavaScript -->
             </div>
         </section>
+        
+        <!-- Sección 3: Contenedor para la tabla de estudiantes -->
+        <section id="seccion-tabla-estudiantes">
+            <h3>Detalle por Estudiante</h3>
+            <div id="tabla-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Grupo</th>
+                            <th>L. Crítica</th>
+                            <th>Matemáticas</th>
+                            <th>C. Naturales</th>
+                            <th>Sociales</th>
+                            <th>Inglés</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-estudiantes-body">
+                        <!-- Las filas de estudiantes se insertarán aquí desde JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Librería para gráficos (Chart.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Librería para leer CSV (Papa Parse) -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <!-- Nuestro script principal -->
-    <script src="app.js"></script>
-</body>
-</html>```
+    <!-- Inclusión de las librerías externas y nuestro script principal -->
+    <!-- Se colocan al final para que la página cargue más rápido -->
 
+    <!-- Librería para crear gráficos (Chart.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Librería para leer archivos CSV (Papa Parse) -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+    <!-- Nuestro propio archivo JavaScript que contiene toda la lógica -->
+    <script src="app.js"></script>
+
+</body>
+</html>
