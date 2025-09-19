@@ -1,10 +1,10 @@
 /* --- Reseteo Básico y Variables de Color --- */
 :root {
-    --color-primario: #003366; /* Azul oscuro corporativo (para títulos) */
-    --color-secundario: #007bff; /* Azul brillante (para botones) */
-    --color-fondo: #f8f9fa;      /* Un gris muy claro para el fondo */
-    --color-texto: #333333;      /* Gris oscuro para el texto general */
-    --sombra-caja: 0 4px 8px rgba(0, 0, 0, 0.05); /* Sombra suave para las tarjetas */
+    --color-primario: #003366;
+    --color-secundario: #007bff;
+    --color-fondo: #f8f9fa;
+    --color-texto: #333333;
+    --sombra-caja: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
 /* --- Estilos Generales del Body --- */
@@ -16,30 +16,41 @@ body {
     color: var(--color-texto);
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centra todo el contenido */
+    align-items: center;
 }
 
 /* --- Encabezado --- */
+/* ¡CORRECCIÓN CLAVE PARA EL LOGO! */
 header {
-    text-align: center;
-    padding: 20px;
-    margin-bottom: 25px;
     width: 100%;
     max-width: 1200px;
-    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 25px;
+    /* Usamos Flexbox para alinear el logo y los textos */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* ¡CORRECCIÓN CLAVE PARA EL LOGO! */
+#logo {
+    /* Ajustamos el ancho máximo. La altura se ajustará automáticamente */
+    max-width: 400px; 
+    height: auto; /* Mantiene la proporción */
+    margin-bottom: 20px;
 }
 
 header h1 {
     color: var(--color-primario);
     margin: 0;
-    font-size: 2.5em;
+    font-size: 2em;
 }
 
 header h2 {
     color: var(--color-texto);
     font-weight: 300;
     margin: 5px 0 0 0;
-    font-size: 1.5em;
+    font-size: 1.2em;
 }
 
 /* --- Contenedor Principal --- */
@@ -59,9 +70,9 @@ main {
 
 #filtro-form {
     display: flex;
-    flex-wrap: wrap; /* Permite que los filtros pasen a la siguiente línea si no caben */
+    flex-wrap: wrap;
     align-items: center;
-    gap: 15px 25px; /* Espacio vertical y horizontal entre elementos */
+    gap: 15px 25px;
 }
 
 #filtro-form label {
@@ -75,7 +86,7 @@ main {
     border-radius: 4px;
     background-color: #ffffff;
     font-size: 1em;
-    min-width: 150px; /* Ancho mínimo para cada selector */
+    min-width: 150px;
 }
 
 #filtro-form button {
@@ -88,11 +99,11 @@ main {
     font-size: 1em;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
-    margin-left: auto; /* Empuja el botón a la derecha */
+    margin-left: auto;
 }
 
 #filtro-form button:hover {
-    background-color: #0056b3; /* Un azul un poco más oscuro al pasar el ratón */
+    background-color: #0056b3;
 }
 
 /* --- Sección de Resultados y Gráficos --- */
@@ -101,13 +112,14 @@ main {
     padding: 20px;
     border-radius: 8px;
     box-shadow: var(--sombra-caja);
-    min-height: 100px; /* Altura mínima para que el contenedor sea visible */
+    min-height: 100px;
+    margin-bottom: 30px;
 }
 
 #graficos-container {
     display: grid;
-    grid-template-columns: 1fr; /* Una columna para que los gráficos se apilen verticalmente */
-    gap: 40px; /* Espacio entre los gráficos */
+    grid-template-columns: 1fr;
+    gap: 40px;
 }
 
 .grafico-wrapper {
@@ -124,10 +136,57 @@ main {
     margin-bottom: 20px;
 }
 
-/* --- Mensaje de "No resultados" --- */
-#graficos-container p {
+/* --- Estilos para la tabla de estudiantes --- */
+#seccion-tabla-estudiantes {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: var(--sombra-caja);
+}
+
+#seccion-tabla-estudiantes h3 {
     text-align: center;
-    font-size: 1.1em;
-    color: #6c757d;
-    padding: 40px;
+    font-size: 1.5em;
+    color: var(--color-primario);
+    margin-top: 0;
+}
+
+#tabla-container {
+    max-height: 700px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+.celda-nota {
+    text-align: center;
+    font-weight: 600;
 }
