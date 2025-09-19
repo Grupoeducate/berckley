@@ -1,28 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ELEMENTOS DEL DOM Y VARIABLES GLOBALES ---
     const consultarBtn = document.getElementById('consultar-btn');
-    let datosCompletos = []; // Almacenará todos los registros de notas
-    let configNiveles = {};  // Almacenará la configuración de niveles y colores del JSON
+    let datosCompletos = [];
+    let configNiveles = {};
 
-    // Constantes para los nombres de las áreas (deben coincidir EXACTAMENTE con el CSV)
     const NOMBRES_AREAS_CSV = [
-        'LECTURA CRÍTICA',
-        'MATEMÁTICAS',
-        'CIENCIAS NATURALES',
-        'SOCIALES Y CIUDADANAS',
-        'INGLÉS'
+        'LECTURA CRÍTICA', 'MATEMÁTICAS', 'CIENCIAS NATURALES', 'SOCIALES Y CIUDADANAS', 'INGLÉS'
     ];
-
-    // Mapeo para conectar los nombres del CSV con las claves del archivo JSON
     const MAPEO_AREAS_JSON = {
-        'LECTURA CRÍTICA': 'Lenguaje',
-        'MATEMÁTICAS': 'matematicas',
-        'CIENCIAS NATURALES': 'ciencias_naturales',
-        'SOCIALES Y CIUDADANAS': 'sociales_ciudadanas',
-        'INGLÉS': 'ingles'
+        'lectura crítica': 'Lenguaje',
+        'matemáticas': 'matematicas',
+        'ciencias naturales': 'ciencias_naturales',
+        'sociales y ciudadanas': 'sociales_ciudadanas',
+        'inglés': 'ingles'
     };
-
-    // --- FUNCIONES AUXILIARES ---
 
     function obtenerCiclo(grado) {
         if (grado >= 1 && grado <= 3) return 'Ciclo-I';
@@ -33,37 +23,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return 'N/A';
     }
 
-    // ¡FUNCIÓN CORREGIDA Y MEJORADA!
     function getNivelInfo(area, nota) {
-        // Usa 'puntaje_global' si el área no está en el mapeo (ej. para promedios de grado)
-        const nombreJson = MAPEO_AREAS_JSON[area] || 'puntaje_global';
+        // ¡CORRECCIÓN! Usamos el nombre del área en minúsculas para que coincida con el mapeo
+        const nombreJson = MAPEO_AREAS_JSON[area.toLowerCase()] || 'puntaje_global';
         const niveles = configNiveles[nombreJson];
         const notaNum = parseFloat(nota);
-
-        if (!niveles || isNaN(notaNum)) {
-            return { nivel: "N/A", color: '#cccccc' }; // Color gris por defecto si algo falla
-        }
-
+        if (!niveles || isNaN(notaNum)) return { nivel: "N/A", color: '#cccccc' };
         for (const nivel of niveles) {
-            if (notaNum >= nivel.min && notaNum <= nivel.max) {
-                return nivel; // Devuelve el objeto completo {nivel, min, max, color}
-            }
+            if (notaNum >= nivel.min && notaNum <= nivel.max) return nivel;
         }
         return { nivel: "N/A", color: '#cccccc' };
     }
 
-
-    // --- LÓGICA PRINCIPAL DE CARGA Y PROCESAMIENTO ---
-
     async function cargarDatos() {
         try {
-            // 1. Cargar el JSON de configuración
             const responseNiveles = await fetch('niveles.json');
             if (!responseNiveles.ok) throw new Error('No se pudo cargar niveles.json');
             configNiveles = await responseNiveles.json();
             console.log("Configuración de niveles cargada.");
 
-            // 2. Cargar los archivos CSV
             const archivos = ['Consolidado_2023-2024.csv', 'Consolidado_2024-2025.csv'];
             let datosTransformados = [];
 
@@ -72,29 +50,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     const response = await fetch(archivo);
                     if (response.ok) {
                         const csvText = await response.text();
-                        // ¡CORRECCIÓN CLAVE! Reemplazar comas decimales ANTES de procesar
                         const csvSinComas = csvText.replace(/,/g, '.');
+                        
+                        // ¡LA CORRECCIÓN MÁS IMPORTANTE ESTÁ AQUÍ!
                         const data = Papa.parse(csvSinComas, {
                             header: true,
                             delimiter: ";",
                             dynamicTyping: true,
-                            skipEmptyLines: true
+                            skipEmptyLines: true,
+                            // Esta línea limpia los nombres de las columnas: quita espacios y los pone en minúsculas
+                            transformHeader: header => header.trim().toLowerCase()
                         }).data;
-                        
-                        // Transformar datos a formato "largo"
+
                         data.forEach(fila => {
+                            // Ahora todas las claves de 'fila' están en minúsculas (ej: fila.grado, fila.estudiante)
                             if (fila.grado) {
                                 NOMBRES_AREAS_CSV.forEach(area => {
-                                    if (fila[area] !== undefined) {
+                                    const areaEnMinusculas = area.toLowerCase();
+                                    if (fila[areaEnMinusculas] !== undefined) {
                                         datosTransformados.push({
-                                            calendario: fila.Calandario,
+                                            calendario: fila.calandario,
                                             prueba: fila.prueba,
                                             grado: fila.grado,
                                             grupo: fila.grupo,
                                             ciclo: obtenerCiclo(fila.grado),
-                                            estudiante: fila.Estudiante,
-                                            area: area,
-                                            nota: parseFloat(fila[area]) || 0
+                                            estudiante: fila.estudiante, // Usamos la clave en minúsculas
+                                            area: area, // Mantenemos el nombre original para las etiquetas
+                                            nota: parseFloat(fila[areaEnMinusculas]) || 0
                                         });
                                     }
                                 });
@@ -103,39 +85,30 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.log(`Archivo "${archivo}" procesado.`);
                     }
                 } catch (error) {
-                    console.warn(`No se pudo cargar o procesar el archivo "${archivo}". Se omitirá.`);
+                    console.warn(`No se pudo procesar el archivo "${archivo}".`, error);
                 }
             }
             datosCompletos = datosTransformados;
             console.log(`Procesamiento finalizado. Total de registros: ${datosCompletos.length}`);
             poblarFiltros();
         } catch (error) {
-            console.error("Error crítico al cargar los datos iniciales:", error);
-            alert("No se pudo cargar la configuración inicial. Por favor, revise la consola.");
+            console.error("Error crítico al cargar datos:", error);
         }
     }
 
     function poblarFiltros() {
         if (datosCompletos.length === 0) return;
-
         const pruebas = [...new Set(datosCompletos.map(d => d.prueba))].sort();
         const grados = [...new Set(datosCompletos.map(d => d.grado))].sort((a, b) => a - b);
         const areas = [...new Set(datosCompletos.map(d => d.area))].sort();
-
         const pruebaSelect = document.getElementById('prueba');
         pruebas.forEach(p => pruebaSelect.add(new Option(p, p)));
-
         const gradoSelect = document.getElementById('grado');
         grados.forEach(g => gradoSelect.add(new Option(`Grado ${g}`, g)));
-
         const areaSelect = document.getElementById('area');
         areas.forEach(a => areaSelect.add(new Option(a, a)));
     }
 
-
-    // --- MANEJO DE EVENTOS Y GENERACIÓN DE VISUALIZACIONES ---
-
-    // ¡FLUJO DE CONSULTA CORREGIDO!
     consultarBtn.addEventListener('click', () => {
         document.getElementById('graficos-container').innerHTML = '';
         document.getElementById('tabla-estudiantes-body').innerHTML = '';
@@ -146,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const grado = document.getElementById('grado').value;
         const area = document.getElementById('area').value;
 
-        const datosFiltrados = datosCompletos.filter(item => 
+        const datosFiltrados = datosCompletos.filter(item =>
             (item.calendario === calendario) &&
             (prueba === 'todos' || item.prueba === prueba) &&
             (ciclo === 'todos' || item.ciclo === ciclo) &&
@@ -159,18 +132,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // ¡CORRECCIÓN CLAVE! Se llama a todas las funciones de visualización
         generarGraficoPromedioPor('Promedio General por Área', datosFiltrados, 'area');
         if (grado === 'todos') {
             generarGraficoPromedioPor('Promedio General por Grado', datosFiltrados, 'grado');
         } else {
             generarGraficoPromedioPor(`Promedio por Grupo - Grado ${grado}`, datosFiltrados, 'grupo');
         }
-        // Llamada a la función para mostrar la tabla
         mostrarTablaEstudiantes(datosFiltrados);
     });
-    
-    // ¡FUNCIÓN DE GRÁFICOS CORREGIDA!
+
     function generarGraficoPromedioPor(titulo, datos, agruparPor) {
         const grupos = {};
         datos.forEach(dato => {
@@ -182,16 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 grupos[clave].contador++;
             }
         });
-
         const labels = Object.keys(grupos).sort();
         const promedios = labels.map(clave => (grupos[clave].contador > 0 ? (grupos[clave].suma / grupos[clave].contador) : 0));
-        
-        // ¡CORRECCIÓN CLAVE! Se asegura de llamar a getNivelInfo correctamente
         const coloresBarras = promedios.map((prom, index) => {
             const areaParaColor = (agruparPor === 'area') ? labels[index] : 'puntaje_global';
             return getNivelInfo(areaParaColor, prom).color;
         });
-
         if (labels.length > 0) {
             generarElementoGrafico(titulo, labels, promedios, coloresBarras);
         }
@@ -207,7 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
         canvasContainer.appendChild(tituloEl);
         canvasContainer.appendChild(canvas);
         container.appendChild(canvasContainer);
-
         new Chart(canvas, {
             type: 'bar',
             data: {
@@ -215,57 +180,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     label: 'Promedio de Notas',
                     data: data.map(d => d.toFixed(2)),
-                    // ¡CORRECCIÓN CLAVE! Se asigna el array de colores dinámicos
                     backgroundColor: colores,
                     borderColor: '#ffffff',
                     borderWidth: 1,
                     borderRadius: 4
                 }]
             },
-            options: {
-                scales: { y: { beginAtZero: true, suggestedMax: 5.0 } },
-                plugins: { legend: { display: false } }
-            }
+            options: { scales: { y: { beginAtZero: true, suggestedMax: 5.0 } }, plugins: { legend: { display: false } } }
         });
     }
-    
-    // ¡FUNCIÓN DE TABLA CORREGIDA!
+
     function mostrarTablaEstudiantes(datos) {
         const tbody = document.getElementById('tabla-estudiantes-body');
         const estudiantes = {};
-        
-        // Agrupar los datos por estudiante para tener una sola fila por cada uno
         datos.forEach(dato => {
-            const nombreEstudiante = dato.estudiante.trim(); // Limpiar espacios en blanco
+            const nombreEstudiante = dato.estudiante ? dato.estudiante.trim() : 'Sin Nombre';
             if (!estudiantes[nombreEstudiante]) {
                 estudiantes[nombreEstudiante] = { grupo: dato.grupo };
             }
             estudiantes[nombreEstudiante][dato.area] = dato.nota;
         });
 
-        // Crear una fila por cada estudiante
         for (const nombreEstudiante in estudiantes) {
             const datosEstudiante = estudiantes[nombreEstudiante];
             const tr = document.createElement('tr');
-            
             tr.innerHTML = `<td>${nombreEstudiante}</td><td>${datosEstudiante.grupo || 'N/A'}</td>`;
-            
-            // Crear celdas de notas con su color de fondo
             NOMBRES_AREAS_CSV.forEach(area => {
                 const nota = datosEstudiante[area] || 0;
-                // ¡CORRECCIÓN CLAVE! Se llama a la función de nivel para obtener el color
                 const nivel = getNivelInfo(area, nota);
                 const td = document.createElement('td');
                 td.className = 'celda-nota';
-                td.innerText = nota.toFixed(2).replace('.',',');
+                td.innerText = nota.toFixed(2).replace('.', ',');
                 td.style.backgroundColor = nivel.color;
-                td.style.color = 'white'; // Texto blanco para alto contraste
+                td.style.color = 'white';
                 tr.appendChild(td);
             });
             tbody.appendChild(tr);
         }
     }
 
-    // --- INICIO DE LA APLICACIÓN ---
     cargarDatos();
 });
